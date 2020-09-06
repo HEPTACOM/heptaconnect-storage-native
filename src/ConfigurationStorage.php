@@ -29,7 +29,7 @@ class ConfigurationStorage extends ConfigurationStorageContract
             $value = $this->storage->get($storagePath);
         }
 
-        return \is_null($value) ? $value : (array) \json_decode($value, true);
+        return \is_null($value) ? [] : (array) \json_decode($value, true);
     }
 
     public function setConfiguration(PortalNodeKeyInterface $portalNodeKey, ?array $data): void
