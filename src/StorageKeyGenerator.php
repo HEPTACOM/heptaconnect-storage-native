@@ -22,7 +22,7 @@ class StorageKeyGenerator extends StorageKeyGeneratorContract
     public function generateKey(string $keyClassName): StorageKeyInterface
     {
         if ($keyClassName === PortalNodeKeyInterface::class) {
-            return new PortalNodeStorageKey('portal_node', (string) $this->nextPrimaryKey('portal_node'));
+            return new PortalNodeStorageKey((string) $this->nextPrimaryKey('portal_node'));
         }
 
         throw new UnsupportedStorageKeyException($keyClassName);
