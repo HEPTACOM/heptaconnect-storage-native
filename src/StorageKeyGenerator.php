@@ -32,7 +32,7 @@ class StorageKeyGenerator extends StorageKeyGeneratorContract
     {
         $keys = (array) \json_decode($this->storage->get(self::FILE_KEYS) ?? '{}', true);
         $result = $keys[$type] = ($keys[$type] ?? 0) + 1;
-        $this->storage->put(self::FILE_KEYS, \json_encode($keys, JSON_PRETTY_PRINT));
+        $this->storage->put(self::FILE_KEYS, \json_encode($keys, \JSON_PRETTY_PRINT));
 
         return $result;
     }
