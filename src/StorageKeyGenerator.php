@@ -2,11 +2,15 @@
 
 namespace Heptacom\HeptaConnect\Storage\Native;
 
+use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\CronjobKeyInterface;
+use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\CronjobRunKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\PortalNodeKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\StorageKeyInterface;
 use Heptacom\HeptaConnect\Storage\Base\Contract\StorageKeyGeneratorContract;
 use Heptacom\HeptaConnect\Storage\Base\Exception\UnsupportedStorageKeyException;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\AbstractStorageKey;
+use Heptacom\HeptaConnect\Storage\Native\StorageKey\CronjobRunStorageKey;
+use Heptacom\HeptaConnect\Storage\Native\StorageKey\CronjobStorageKey;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\PortalNodeStorageKey;
 
 class StorageKeyGenerator extends StorageKeyGeneratorContract
@@ -14,10 +18,14 @@ class StorageKeyGenerator extends StorageKeyGeneratorContract
     private const FILE_KEYS = 'storage_key_generator/keys.json';
 
     private const TYPE_KEY_MAP = [
+        CronjobStorageKey::TYPE_KEY => CronjobStorageKey::class,
+        CronjobRunStorageKey::TYPE_KEY => CronjobRunStorageKey::class,
         PortalNodeStorageKey::TYPE_KEY => PortalNodeStorageKey::class,
     ];
 
     private const IMPLEMENTATION_MAP = [
+        CronjobKeyInterface::class => CronjobStorageKey::class,
+        CronjobRunKeyInterface::class => CronjobRunStorageKey::class,
         PortalNodeKeyInterface::class => PortalNodeStorageKey::class,
     ];
 

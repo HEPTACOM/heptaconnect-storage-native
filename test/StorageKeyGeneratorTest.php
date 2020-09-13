@@ -2,6 +2,8 @@
 
 namespace Heptacom\HeptaConnect\Storage\Native\Test;
 
+use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\CronjobKeyInterface;
+use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\CronjobRunKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\PortalNodeKeyInterface;
 use Heptacom\HeptaConnect\Storage\Native\FileStorageHandler;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\AbstractStorageKey;
@@ -10,6 +12,8 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * @covers \Heptacom\HeptaConnect\Storage\Native\StorageKey\AbstractStorageKey
+ * @covers \Heptacom\HeptaConnect\Storage\Native\StorageKey\CronjobStorageKey
+ * @covers \Heptacom\HeptaConnect\Storage\Native\StorageKey\CronjobRunStorageKey
  * @covers \Heptacom\HeptaConnect\Storage\Native\StorageKey\PortalNodeStorageKey
  * @covers \Heptacom\HeptaConnect\Storage\Native\StorageKeyGenerator
  */
@@ -91,5 +95,7 @@ class StorageKeyGeneratorTest extends TestCase
     public function provideKeyInterfaces(): iterable
     {
         yield [PortalNodeKeyInterface::class];
+        yield [CronjobKeyInterface::class];
+        yield [CronjobRunKeyInterface::class];
     }
 }
