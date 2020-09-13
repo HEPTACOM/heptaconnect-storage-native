@@ -44,7 +44,7 @@ class ConfigurationStorage extends ConfigurationStorageContract
             $this->storage->remove($storagePath);
         }
 
-        $this->storage->put($storagePath, \json_encode($data));
+        $this->storage->put($storagePath, \json_encode($data, \JSON_PRETTY_PRINT));
     }
 
     private function getStoragePath(PortalNodeStorageKey $portalNodeKey): string
