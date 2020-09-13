@@ -28,12 +28,12 @@ class PortalStorage extends PortalStorageContract
         }
 
         $storageFile = $this->getStoragePath($portalNodeKey);
-        $data = (array) \json_decode($this->fileStorageHandler->get($storageFile) ?? '[]', true);
+        $data = $this->fileStorageHandler->getJson($storageFile);
         $data[$key] = [
             self::KEY_VALUE => $value,
             self::KEY_TYPE => $type,
         ];
-        $this->fileStorageHandler->put($storageFile, \json_encode($data, \JSON_PRETTY_PRINT));
+        $this->fileStorageHandler->putJson($storageFile, $data);
     }
 
     public function unset(PortalNodeKeyInterface $portalNodeKey, string $key): void
@@ -43,14 +43,14 @@ class PortalStorage extends PortalStorageContract
         }
 
         $storageFile = $this->getStoragePath($portalNodeKey);
-        $data = (array) \json_decode($this->fileStorageHandler->get($storageFile) ?? '[]', true);
+        $data = $this->fileStorageHandler->getJson($storageFile);
 
         if (!\array_key_exists($key, $data)) {
             throw new NotFoundException();
         }
 
         unset($data[$key]);
-        $this->fileStorageHandler->put($storageFile, \json_encode($data, \JSON_PRETTY_PRINT));
+        $this->fileStorageHandler->putJson($storageFile, $data);
     }
 
     public function getValue(PortalNodeKeyInterface $portalNodeKey, string $key): string
@@ -97,7 +97,7 @@ class PortalStorage extends PortalStorageContract
     private function innerGet(PortalNodeStorageKey $portalNodeKey, string $key): ?array
     {
         $storageFile = $this->getStoragePath($portalNodeKey);
-        $data = (array) \json_decode($this->fileStorageHandler->get($storageFile) ?? '[]', true);
+        $data = $this->fileStorageHandler->getJson($storageFile);
 
         return $data[$key] ?? null;
     }

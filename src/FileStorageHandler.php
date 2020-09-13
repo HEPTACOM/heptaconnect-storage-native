@@ -49,6 +49,22 @@ class FileStorageHandler
         }
     }
 
+    public function putJson(string $filePath, ?array $content): void
+    {
+        if (\is_null($content) || empty($content)) {
+            $this->remove($filePath);
+        } else {
+            $this->put($filePath, \json_encode($content, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        }
+    }
+
+    public function getJson(string $filePath, string $defaultJson = '[]'): ?array
+    {
+        $content = $this->get($filePath);
+
+        return (array) \json_decode($content ?? $defaultJson, true);
+    }
+
     private function mergePath($filePath): string
     {
         return $this->baseDir.$this->separator.\ltrim($filePath, $this->separator);

@@ -22,14 +22,7 @@ class ConfigurationStorage extends ConfigurationStorageContract
             throw new UnsupportedStorageKeyException(\get_class($portalNodeKey));
         }
 
-        $value = null;
-        $storagePath = $this->getStoragePath($portalNodeKey);
-
-        if ($this->storage->has($storagePath)) {
-            $value = $this->storage->get($storagePath);
-        }
-
-        return \is_null($value) ? [] : (array) \json_decode($value, true);
+        return $this->storage->getJson($this->getStoragePath($portalNodeKey));
     }
 
     public function setConfiguration(PortalNodeKeyInterface $portalNodeKey, ?array $data): void
@@ -38,13 +31,7 @@ class ConfigurationStorage extends ConfigurationStorageContract
             throw new UnsupportedStorageKeyException(\get_class($portalNodeKey));
         }
 
-        $storagePath = $this->getStoragePath($portalNodeKey);
-
-        if (\is_null($data)) {
-            $this->storage->remove($storagePath);
-        }
-
-        $this->storage->put($storagePath, \json_encode($data, \JSON_PRETTY_PRINT));
+        $this->storage->putJson($this->getStoragePath($portalNodeKey), $data);
     }
 
     private function getStoragePath(PortalNodeStorageKey $portalNodeKey): string

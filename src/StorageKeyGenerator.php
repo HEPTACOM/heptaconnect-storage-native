@@ -43,9 +43,9 @@ class StorageKeyGenerator extends StorageKeyGeneratorContract
 
     private function nextPrimaryKey(string $type): int
     {
-        $keys = (array) \json_decode($this->storage->get(self::FILE_KEYS) ?? '{}', true);
+        $keys = $this->storage->getJson(self::FILE_KEYS);
         $result = $keys[$type] = ($keys[$type] ?? 0) + 1;
-        $this->storage->put(self::FILE_KEYS, \json_encode($keys, \JSON_PRETTY_PRINT));
+        $this->storage->putJson(self::FILE_KEYS, $keys);
 
         return $result;
     }
