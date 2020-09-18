@@ -6,12 +6,14 @@ use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\CronjobKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\CronjobRunKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\PortalNodeKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\StorageKeyInterface;
+use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\WebhookKeyInterface;
 use Heptacom\HeptaConnect\Storage\Base\Contract\StorageKeyGeneratorContract;
 use Heptacom\HeptaConnect\Storage\Base\Exception\UnsupportedStorageKeyException;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\AbstractStorageKey;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\CronjobRunStorageKey;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\CronjobStorageKey;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\PortalNodeStorageKey;
+use Heptacom\HeptaConnect\Storage\Native\StorageKey\WebhookStorageKey;
 
 class StorageKeyGenerator extends StorageKeyGeneratorContract
 {
@@ -21,12 +23,14 @@ class StorageKeyGenerator extends StorageKeyGeneratorContract
         CronjobStorageKey::TYPE_KEY => CronjobStorageKey::class,
         CronjobRunStorageKey::TYPE_KEY => CronjobRunStorageKey::class,
         PortalNodeStorageKey::TYPE_KEY => PortalNodeStorageKey::class,
+        WebhookStorageKey::TYPE_KEY => WebhookStorageKey::class,
     ];
 
     private const IMPLEMENTATION_MAP = [
         CronjobKeyInterface::class => CronjobStorageKey::class,
         CronjobRunKeyInterface::class => CronjobRunStorageKey::class,
         PortalNodeKeyInterface::class => PortalNodeStorageKey::class,
+        WebhookKeyInterface::class => WebhookStorageKey::class,
     ];
 
     private FileStorageHandler $storage;
