@@ -5,6 +5,7 @@ namespace Heptacom\HeptaConnect\Storage\Native;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\CronjobKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\CronjobRunKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\PortalNodeKeyInterface;
+use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\RouteKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\StorageKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\WebhookKeyInterface;
 use Heptacom\HeptaConnect\Storage\Base\Contract\StorageKeyGeneratorContract;
@@ -13,6 +14,7 @@ use Heptacom\HeptaConnect\Storage\Native\StorageKey\AbstractStorageKey;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\CronjobRunStorageKey;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\CronjobStorageKey;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\PortalNodeStorageKey;
+use Heptacom\HeptaConnect\Storage\Native\StorageKey\RouteStorageKey;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\WebhookStorageKey;
 
 class StorageKeyGenerator extends StorageKeyGeneratorContract
@@ -24,6 +26,7 @@ class StorageKeyGenerator extends StorageKeyGeneratorContract
         CronjobRunStorageKey::TYPE_KEY => CronjobRunStorageKey::class,
         PortalNodeStorageKey::TYPE_KEY => PortalNodeStorageKey::class,
         WebhookStorageKey::TYPE_KEY => WebhookStorageKey::class,
+        RouteStorageKey::TYPE_KEY => RouteStorageKey::class,
     ];
 
     private const IMPLEMENTATION_MAP = [
@@ -31,6 +34,7 @@ class StorageKeyGenerator extends StorageKeyGeneratorContract
         CronjobRunKeyInterface::class => CronjobRunStorageKey::class,
         PortalNodeKeyInterface::class => PortalNodeStorageKey::class,
         WebhookKeyInterface::class => WebhookStorageKey::class,
+        RouteKeyInterface::class => RouteStorageKey::class,
     ];
 
     private FileStorageHandler $storage;
