@@ -1,15 +1,16 @@
 <?php declare(strict_types=1);
 
-namespace Heptacom\HeptaConnect\Storage\Native;
+namespace Heptacom\HeptaConnect\Storage\Native\Repository;
 
 use Heptacom\HeptaConnect\Portal\Base\Mapping\Contract\MappingInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\MappingKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\MappingNodeKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\PortalNodeKeyInterface;
-use Heptacom\HeptaConnect\Storage\Base\Contract\MappingRepositoryContract;
+use Heptacom\HeptaConnect\Storage\Base\Contract\Repository\MappingRepositoryContract;
 use Heptacom\HeptaConnect\Storage\Base\Contract\StorageKeyGeneratorContract;
 use Heptacom\HeptaConnect\Storage\Base\Exception\NotFoundException;
 use Heptacom\HeptaConnect\Storage\Base\Exception\UnsupportedStorageKeyException;
+use Heptacom\HeptaConnect\Storage\Native\FileStorageHandler;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\MappingStorageKey;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\PortalNodeStorageKey;
 use Heptacom\HeptaConnect\Storage\ShopwareDal\StorageKey\MappingNodeStorageKey;

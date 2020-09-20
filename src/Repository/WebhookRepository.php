@@ -1,14 +1,15 @@
 <?php declare(strict_types=1);
 
-namespace Heptacom\HeptaConnect\Storage\Native;
+namespace Heptacom\HeptaConnect\Storage\Native\Repository;
 
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\PortalNodeKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\WebhookKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\Webhook\Contract\WebhookInterface;
+use Heptacom\HeptaConnect\Storage\Base\Contract\Repository\WebhookRepositoryContract;
 use Heptacom\HeptaConnect\Storage\Base\Contract\StorageKeyGeneratorContract;
-use Heptacom\HeptaConnect\Storage\Base\Contract\WebhookRepositoryContract;
 use Heptacom\HeptaConnect\Storage\Base\Exception\NotFoundException;
 use Heptacom\HeptaConnect\Storage\Base\Exception\UnsupportedStorageKeyException;
+use Heptacom\HeptaConnect\Storage\Native\FileStorageHandler;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\PortalNodeStorageKey;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\WebhookStorageKey;
 

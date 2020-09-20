@@ -1,16 +1,17 @@
 <?php declare(strict_types=1);
 
-namespace Heptacom\HeptaConnect\Storage\Native;
+namespace Heptacom\HeptaConnect\Storage\Native\Repository;
 
 use Heptacom\HeptaConnect\Portal\Base\Cronjob\Contract\CronjobRunInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\CronjobKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\CronjobRunKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\PortalNodeKeyInterface;
-use Heptacom\HeptaConnect\Storage\Base\Contract\CronjobRepositoryContract;
-use Heptacom\HeptaConnect\Storage\Base\Contract\CronjobRunRepositoryContract;
+use Heptacom\HeptaConnect\Storage\Base\Contract\Repository\CronjobRepositoryContract;
+use Heptacom\HeptaConnect\Storage\Base\Contract\Repository\CronjobRunRepositoryContract;
 use Heptacom\HeptaConnect\Storage\Base\Contract\StorageKeyGeneratorContract;
 use Heptacom\HeptaConnect\Storage\Base\Exception\NotFoundException;
 use Heptacom\HeptaConnect\Storage\Base\Exception\UnsupportedStorageKeyException;
+use Heptacom\HeptaConnect\Storage\Native\FileStorageHandler;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\CronjobRunStorageKey;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\CronjobStorageKey;
 
