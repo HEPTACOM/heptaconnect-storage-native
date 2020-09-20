@@ -9,22 +9,19 @@ use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\StorageKeyInterface;
 use Heptacom\HeptaConnect\Storage\Base\Contract\Repository\CronjobRepositoryContract;
 use Heptacom\HeptaConnect\Storage\Base\Contract\StorageKeyGeneratorContract;
 use Heptacom\HeptaConnect\Storage\Base\Exception\NotFoundException;
-use Heptacom\HeptaConnect\Storage\Base\Exception\UnsupportedStorageKeyException;
-use Heptacom\HeptaConnect\Storage\Native\FileStorageHandler;
-use Heptacom\HeptaConnect\Storage\Native\StorageKey\CronjobStorageKey;
-use Heptacom\HeptaConnect\Storage\Native\StorageKey\PortalNodeStorageKey;
+use Heptacom\HeptaConnect\Storage\Native\FileStorageRepository;
 
 class CronjobRepository extends CronjobRepositoryContract
 {
-    private FileStorageHandler $fileStorageHandler;
+    private FileStorageRepository $repository;
 
     private StorageKeyGeneratorContract $storageKeyGenerator;
 
     public function __construct(
-        FileStorageHandler $fileStorageHandler,
+        FileStorageRepository $repository,
         StorageKeyGeneratorContract $storageKeyGenerator
     ) {
-        $this->fileStorageHandler = $fileStorageHandler;
+        $this->repository = $repository;
         $this->storageKeyGenerator = $storageKeyGenerator;
     }
 
@@ -35,39 +32,22 @@ class CronjobRepository extends CronjobRepositoryContract
         \DateTimeInterface $nextExecution,
         ?array $payload = null
     ): CronjobInterface {
-        if (!$portalNodeKey instanceof PortalNodeStorageKey) {
-            throw new UnsupportedStorageKeyException(\get_class($portalNodeKey));
-        }
-
-        $data = $this->fileStorageHandler->getJson($this->getStoragePath());
-        $id = $this->storageKeyGenerator->generateKey(CronjobKeyInterface::class);
-        $data[$this->storageKeyGenerator->serialize($id)] = [
+        $key = $this->storageKeyGenerator->generateKey(CronjobKeyInterface::class);
+        $this->repository->put($key, [
             'cronExpression' => $cronExpression,
             'handler' => $handler,
             'payload' => $payload,
             'queuedUntil' => $nextExecution->getTimestamp(),
-            'portalNodeKey' => $this->storageKeyGenerator->serialize($portalNodeKey),
-        ];
-        $this->fileStorageHandler->putJson($this->getStoragePath(), $data);
+            'portalNodeKey' => $portalNodeKey,
+        ]);
 
-        return $this->createCronjob($portalNodeKey, $handler, $payload, $id, $cronExpression, $nextExecution);
+        return $this->createCronjob($portalNodeKey, $handler, $payload, $key, $cronExpression, $nextExecution);
     }
 
     public function read(CronjobKeyInterface $cronjobKey): CronjobInterface
     {
-        if (!$cronjobKey instanceof CronjobStorageKey) {
-            throw new UnsupportedStorageKeyException(\get_class($cronjobKey));
-        }
-
-        $storageFile = $this->getStoragePath();
-        $data = $this->fileStorageHandler->getJson($storageFile);
-        $item = $data[$this->storageKeyGenerator->serialize($cronjobKey)] ?? null;
-
-        if (!\is_array($item)) {
-            throw new NotFoundException();
-        }
-
-        $portalNodeKey = $this->storageKeyGenerator->deserialize($item['portalNodeKey']);
+        $item = $this->repository->get($cronjobKey);
+        $portalNodeKey = $item['portalNodeKey'];
 
         if (!$portalNodeKey instanceof PortalNodeKeyInterface) {
             throw new NotFoundException();
@@ -87,56 +67,27 @@ class CronjobRepository extends CronjobRepositoryContract
 
     public function updateNextExecutionTime(CronjobKeyInterface $cronjobKey, \DateTimeInterface $nextExecution): void
     {
-        if (!$cronjobKey instanceof CronjobStorageKey) {
-            throw new UnsupportedStorageKeyException(\get_class($cronjobKey));
-        }
-
-        $storageFile = $this->getStoragePath();
-        $data = $this->fileStorageHandler->getJson($storageFile);
-        $key = $this->storageKeyGenerator->serialize($cronjobKey);
-
-        if (!\array_key_exists($key, $data)) {
-            throw new NotFoundException();
-        }
-
-        $data[$key]['queuedUntil'] = $nextExecution->getTimestamp();
-
-        $this->fileStorageHandler->putJson($this->getStoragePath(), $data);
+        $item = $this->repository->get($cronjobKey);
+        $item['queuedUntil'] = $nextExecution;
+        $this->repository->put($cronjobKey, $item);
     }
 
     public function delete(CronjobKeyInterface $cronjobKey): void
     {
-        if (!$cronjobKey instanceof CronjobStorageKey) {
-            throw new UnsupportedStorageKeyException(\get_class($cronjobKey));
-        }
-
-        $storageFile = $this->getStoragePath();
-        $data = $this->fileStorageHandler->getJson($storageFile);
-        $key = $this->storageKeyGenerator->serialize($cronjobKey);
-
-        if (!\array_key_exists($key, $data)) {
-            throw new NotFoundException();
-        }
-
-        unset($data[$key]);
-        $this->fileStorageHandler->putJson($this->getStoragePath(), $data);
+        $this->repository->remove($cronjobKey);
     }
 
     public function listExecutables(?\DateTimeInterface $until = null): iterable
     {
-        $storageFile = $this->getStoragePath();
-        $data = $this->fileStorageHandler->getJson($storageFile);
+        foreach ($this->repository->list() as $item) {
+            $queuedUntil = $item['queuedUntil'] ?? null;
 
-        foreach ($data as $cronjobId => $cronjob) {
-            if (!$until instanceof \DateTimeInterface || $cronjob['queuedUntil'] <= $until->getTimestamp()) {
-                yield new CronjobStorageKey($cronjobId);
+            if (!$until instanceof \DateTimeInterface ||
+                !$queuedUntil instanceof \DateTimeInterface ||
+                $queuedUntil->getTimestamp() <= $until->getTimestamp()) {
+                yield $item['id'];
             }
         }
-    }
-
-    private function getStoragePath(): string
-    {
-        return 'cronjobs.json';
     }
 
     private function createCronjob(

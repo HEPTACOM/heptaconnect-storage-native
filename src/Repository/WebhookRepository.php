@@ -7,23 +7,21 @@ use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\WebhookKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\Webhook\Contract\WebhookInterface;
 use Heptacom\HeptaConnect\Storage\Base\Contract\Repository\WebhookRepositoryContract;
 use Heptacom\HeptaConnect\Storage\Base\Contract\StorageKeyGeneratorContract;
-use Heptacom\HeptaConnect\Storage\Base\Exception\NotFoundException;
 use Heptacom\HeptaConnect\Storage\Base\Exception\UnsupportedStorageKeyException;
-use Heptacom\HeptaConnect\Storage\Native\FileStorageHandler;
-use Heptacom\HeptaConnect\Storage\Native\StorageKey\PortalNodeStorageKey;
+use Heptacom\HeptaConnect\Storage\Native\FileStorageRepository;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\WebhookStorageKey;
 
 class WebhookRepository extends WebhookRepositoryContract
 {
-    private FileStorageHandler $fileStorageHandler;
-
     private StorageKeyGeneratorContract $storageKeyGenerator;
 
+    private FileStorageRepository $repository;
+
     public function __construct(
-        FileStorageHandler $fileStorageHandler,
+        FileStorageRepository $repository,
         StorageKeyGeneratorContract $storageKeyGenerator
     ) {
-        $this->fileStorageHandler = $fileStorageHandler;
+        $this->repository = $repository;
         $this->storageKeyGenerator = $storageKeyGenerator;
     }
 
@@ -33,42 +31,26 @@ class WebhookRepository extends WebhookRepositoryContract
         string $handler,
         ?array $payload = null
     ): WebhookKeyInterface {
-        if (!$portalNodeKey instanceof PortalNodeStorageKey) {
-            throw new UnsupportedStorageKeyException(\get_class($portalNodeKey));
-        }
-
         $key = $this->storageKeyGenerator->generateKey(WebhookKeyInterface::class);
 
         if (!$key instanceof WebhookStorageKey) {
             throw new UnsupportedStorageKeyException(\get_class($key));
         }
 
-        $data = $this->fileStorageHandler->getJson($this->getStoragePath());
-        $data[$this->storageKeyGenerator->serialize($key)] = [
+        $this->repository->put($key, [
             'url' => $url,
             'handler' => $handler,
             'payload' => $payload,
-            'portalNodeKey' => $this->storageKeyGenerator->serialize($portalNodeKey),
-        ];
-        $this->fileStorageHandler->putJson($this->getStoragePath(), $data);
+            'portalNodeKey' => $portalNodeKey,
+        ]);
 
         return $key;
     }
 
     public function read(WebhookKeyInterface $key): WebhookInterface
     {
-        if (!$key instanceof WebhookStorageKey) {
-            throw new UnsupportedStorageKeyException(\get_class($key));
-        }
-
-        $data = $this->fileStorageHandler->getJson($this->getStoragePath());
-        $keyData = $this->storageKeyGenerator->serialize($key);
-
-        if (!\array_key_exists($keyData, $data)) {
-            throw new NotFoundException();
-        }
-
-        $portalNodeKey = $this->storageKeyGenerator->deserialize($data[$keyData]['portalNodeKey']);
+        $item = $this->repository->get($key);
+        $portalNodeKey = $item['portalNodeKey'];
 
         if (!$portalNodeKey instanceof PortalNodeKeyInterface) {
             throw new UnsupportedStorageKeyException(\get_class($portalNodeKey));
@@ -77,9 +59,9 @@ class WebhookRepository extends WebhookRepositoryContract
         return new class (
             $portalNodeKey,
             $key,
-            (string) $data[$keyData]['key'],
-            (string) $data[$keyData]['handler'],
-            $data[$keyData]['payload'] ? (array) $data[$keyData]['payload'] : null
+            (string) $item['key'],
+            (string) $item['handler'],
+            $item['payload'] ? (array) $item['payload'] : null
         ) implements WebhookInterface {
             private PortalNodeKeyInterface $portalNodeKey;
 
@@ -134,17 +116,10 @@ class WebhookRepository extends WebhookRepositoryContract
 
     public function listByUrl(string $url): iterable
     {
-        $data = $this->fileStorageHandler->getJson($this->getStoragePath());
-
-        foreach ($data as $webhookKey => $webhook) {
+        foreach ($this->repository->list() as $webhook) {
             if ($webhook['url'] === $url) {
-                yield new $this->storageKeyGenerator->deserialize($webhookKey);
+                yield new $webhook['id'];
             }
         }
-    }
-
-    private function getStoragePath(): string
-    {
-        return 'webhooks.json';
     }
 }

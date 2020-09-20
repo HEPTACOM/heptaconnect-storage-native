@@ -6,52 +6,37 @@ use Heptacom\HeptaConnect\Portal\Base\Mapping\Contract\MappingInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\MappingKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\MappingNodeKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\PortalNodeKeyInterface;
+use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\StorageKeyInterface;
 use Heptacom\HeptaConnect\Storage\Base\Contract\Repository\MappingRepositoryContract;
 use Heptacom\HeptaConnect\Storage\Base\Contract\StorageKeyGeneratorContract;
 use Heptacom\HeptaConnect\Storage\Base\Exception\NotFoundException;
 use Heptacom\HeptaConnect\Storage\Base\Exception\UnsupportedStorageKeyException;
-use Heptacom\HeptaConnect\Storage\Native\FileStorageHandler;
+use Heptacom\HeptaConnect\Storage\Native\FileStorageRepository;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\MappingStorageKey;
-use Heptacom\HeptaConnect\Storage\Native\StorageKey\PortalNodeStorageKey;
-use Heptacom\HeptaConnect\Storage\ShopwareDal\StorageKey\MappingNodeStorageKey;
 
 class MappingRepository extends MappingRepositoryContract
 {
-    private FileStorageHandler $fileStorageHandler;
+    private FileStorageRepository $repository;
 
     private StorageKeyGeneratorContract $storageKeyGenerator;
 
     public function __construct(
-        FileStorageHandler $fileStorageHandler,
+        FileStorageRepository $repository,
         StorageKeyGeneratorContract $storageKeyGenerator
     ) {
-        $this->fileStorageHandler = $fileStorageHandler;
+        $this->repository = $repository;
         $this->storageKeyGenerator = $storageKeyGenerator;
     }
 
     public function read(MappingKeyInterface $key): MappingInterface
     {
-        if (!$key instanceof MappingStorageKey) {
-            throw new UnsupportedStorageKeyException(\get_class($key));
-        }
-
-        $storageFile = $this->getStoragePath();
-        $data = $this->fileStorageHandler->getJson($storageFile);
-        $keyData = $this->storageKeyGenerator->serialize($key);
-
-        if (!\array_key_exists($keyData, $data)) {
-            throw new NotFoundException();
-        }
-
-        $item = (array) $data[$keyData];
-
-        $portalNodeKey = $this->storageKeyGenerator->deserialize($item['portalNodeKey']);
+        $item = $this->repository->get($key);
+        $portalNodeKey = $item['portalNodeKey'];
+        $mappingNodeKey = $item['mappingNodeKey'];
 
         if (!$portalNodeKey instanceof PortalNodeKeyInterface) {
             throw new NotFoundException();
         }
-
-        $mappingNodeKey = $this->storageKeyGenerator->deserialize($item['mappingNodeKey']);
 
         if (!$mappingNodeKey instanceof MappingNodeKeyInterface) {
             throw new NotFoundException();
@@ -119,16 +104,16 @@ class MappingRepository extends MappingRepositoryContract
         MappingNodeKeyInterface $mappingNodeKey,
         PortalNodeKeyInterface $portalNodeKey
     ): iterable {
-        $storageFile = $this->getStoragePath();
-        $data = $this->fileStorageHandler->getJson($storageFile);
+        foreach ($this->repository->list() as $item) {
+            $itemMappingNodeKey = $item['mappingNodeKey'] ?? null;
+            $itemPortalNodeKey = $item['portalNodeKey'] ?? null;
 
-        $mappingNodeKeyData = $this->storageKeyGenerator->serialize($mappingNodeKey);
-        $portalNodeKeyData = $this->storageKeyGenerator->serialize($portalNodeKey);
-
-        foreach ($data as $mappingId => $mapping) {
-            if ($mapping['mappingNodeKey'] === $mappingNodeKeyData &&
-                $mapping['portalNodeKey'] === $portalNodeKeyData) {
-                yield $this->storageKeyGenerator->deserialize($mappingId);
+            if ($itemMappingNodeKey instanceof StorageKeyInterface &&
+                $itemPortalNodeKey instanceof StorageKeyInterface &&
+                $itemMappingNodeKey->equals($mappingNodeKey) &&
+                $itemPortalNodeKey->equals($portalNodeKey)
+            ) {
+                yield $item['id'];
             }
         }
     }
@@ -138,71 +123,31 @@ class MappingRepository extends MappingRepositoryContract
         MappingNodeKeyInterface $mappingNodeKey,
         ?string $externalId
     ): MappingKeyInterface {
-        if (!$portalNodeKey instanceof PortalNodeStorageKey) {
-            throw new UnsupportedStorageKeyException(\get_class($portalNodeKey));
-        }
-
-        if (!$mappingNodeKey instanceof MappingNodeStorageKey) {
-            throw new UnsupportedStorageKeyException(\get_class($mappingNodeKey));
-        }
-
         $id = $this->storageKeyGenerator->generateKey(MappingKeyInterface::class);
 
         if (!$id instanceof MappingStorageKey) {
             throw new UnsupportedStorageKeyException(\get_class($id));
         }
 
-        $data = $this->fileStorageHandler->getJson($this->getStoragePath());
-        $data[$this->storageKeyGenerator->serialize($id)] = [
-            'portalNodeKey' => $this->storageKeyGenerator->serialize($portalNodeKey),
-            'mappingNodeKey' => $this->storageKeyGenerator->serialize($mappingNodeKey),
-            'mappingNodeType' => null, // TODO fill when MappingNodeRepository is present
+        $this->repository->put($id, [
+            'portalNodeKey' => $portalNodeKey,
+            'mappingNodeKey' => $mappingNodeKey,
+            'mappingNodeType' => null,
             'externalId' => $externalId,
-        ];
-        $this->fileStorageHandler->putJson($this->getStoragePath(), $data);
+        ]);
 
         return $id;
     }
 
     public function updateExternalId(MappingKeyInterface $key, ?string $externalId): void
     {
-        if (!$key instanceof MappingStorageKey) {
-            throw new UnsupportedStorageKeyException(\get_class($key));
-        }
-
-        $storageFile = $this->getStoragePath();
-        $data = $this->fileStorageHandler->getJson($storageFile);
-        $keyData = $this->storageKeyGenerator->serialize($key);
-
-        if (!\array_key_exists($keyData, $data)) {
-            throw new NotFoundException();
-        }
-
-        $data[$keyData]['externalId'] = $externalId;
-
-        $this->fileStorageHandler->putJson($this->getStoragePath(), $data);
+        $item = $this->repository->get($key);
+        $item['externalId'] = $externalId;
+        $this->repository->put($key, $item);
     }
 
     public function delete(MappingKeyInterface $key): void
     {
-        if (!$key instanceof MappingStorageKey) {
-            throw new UnsupportedStorageKeyException(\get_class($key));
-        }
-
-        $storageFile = $this->getStoragePath();
-        $data = $this->fileStorageHandler->getJson($storageFile);
-        $keyData = $this->storageKeyGenerator->serialize($key);
-
-        if (!\array_key_exists($keyData, $data)) {
-            throw new NotFoundException();
-        }
-
-        unset($data[$keyData]);
-        $this->fileStorageHandler->putJson($this->getStoragePath(), $data);
-    }
-
-    private function getStoragePath(): string
-    {
-        return 'mappings.json';
+        $this->repository->remove($key);
     }
 }

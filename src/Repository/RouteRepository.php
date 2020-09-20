@@ -5,47 +5,36 @@ namespace Heptacom\HeptaConnect\Storage\Native\Repository;
 use Heptacom\HeptaConnect\Portal\Base\Portal\Contract\RouteInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\PortalNodeKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\RouteKeyInterface;
+use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\StorageKeyInterface;
 use Heptacom\HeptaConnect\Storage\Base\Contract\Repository\RouteRepositoryContract;
 use Heptacom\HeptaConnect\Storage\Base\Contract\StorageKeyGeneratorContract;
-use Heptacom\HeptaConnect\Storage\Base\Exception\NotFoundException;
 use Heptacom\HeptaConnect\Storage\Base\Exception\UnsupportedStorageKeyException;
-use Heptacom\HeptaConnect\Storage\Native\StorageKey\PortalNodeStorageKey;
+use Heptacom\HeptaConnect\Storage\Native\FileStorageRepository;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\RouteStorageKey;
 
 class RouteRepository extends RouteRepositoryContract
 {
-    private FileStorageHandler $fileStorageHandler;
-
     private StorageKeyGeneratorContract $storageKeyGenerator;
 
+    private FileStorageRepository $repository;
+
     public function __construct(
-        FileStorageHandler $fileStorageHandler,
+        FileStorageRepository $repository,
         StorageKeyGeneratorContract $storageKeyGenerator
     ) {
-        $this->fileStorageHandler = $fileStorageHandler;
+        $this->repository = $repository;
         $this->storageKeyGenerator = $storageKeyGenerator;
     }
 
     public function read(RouteKeyInterface $key): RouteInterface
     {
-        if (!$key instanceof RouteStorageKey) {
-            throw new UnsupportedStorageKeyException(\get_class($key));
-        }
-
-        $data = $this->fileStorageHandler->getJson($this->getStoragePath());
-        $keyData = $this->storageKeyGenerator->serialize($key);
-
-        if (!\array_key_exists($keyData, $data)) {
-            throw new NotFoundException();
-        }
-
-        $sourceKey = $this->storageKeyGenerator->deserialize($data[$keyData]['sourceKey']);
+        $item = $this->repository->get($key);
+        $sourceKey = $item['sourceKey'];
+        $targetKey = $item['targetKey'];
 
         if (!$sourceKey instanceof PortalNodeKeyInterface) {
             throw new UnsupportedStorageKeyException(\get_class($sourceKey));
         }
-
-        $targetKey = $this->storageKeyGenerator->deserialize($data[$keyData]['targetKey']);
 
         if (!$targetKey instanceof PortalNodeKeyInterface) {
             throw new UnsupportedStorageKeyException(\get_class($targetKey));
@@ -55,7 +44,7 @@ class RouteRepository extends RouteRepositoryContract
             $key,
             $targetKey,
             $sourceKey,
-            (string) $data[$keyData]['type']
+            (string) $item['type']
         ) implements RouteInterface {
             private RouteKeyInterface $key;
 
@@ -107,16 +96,14 @@ class RouteRepository extends RouteRepositoryContract
 
     public function listBySourceAndEntityType(PortalNodeKeyInterface $sourceKey, string $entityClassName): iterable
     {
-        if (!$sourceKey instanceof PortalNodeStorageKey) {
-            throw new UnsupportedStorageKeyException(\get_class($sourceKey));
-        }
+        foreach ($this->repository->list() as $item) {
+            $itemSourceKey = $item['sourceKey'] ?? null;
 
-        $sourceKeyData = $this->storageKeyGenerator->serialize($sourceKey);
-        $data = $this->fileStorageHandler->getJson($this->getStoragePath());
-
-        foreach ($data as $routeKey => $route) {
-            if ($route['type'] === $entityClassName && $route['sourceKey'] === $sourceKeyData) {
-                yield new $this->storageKeyGenerator->deserialize($routeKey);
+            if ($item['type'] === $entityClassName &&
+                $itemSourceKey instanceof StorageKeyInterface &&
+                $itemSourceKey->equals($sourceKey)
+            ) {
+                yield $item['id'];
             }
         }
     }
@@ -126,33 +113,18 @@ class RouteRepository extends RouteRepositoryContract
         PortalNodeKeyInterface $targetKey,
         string $entityClassName
     ): RouteKeyInterface {
-        if (!$sourceKey instanceof PortalNodeStorageKey) {
-            throw new UnsupportedStorageKeyException(\get_class($sourceKey));
-        }
-
-        if (!$targetKey instanceof PortalNodeStorageKey) {
-            throw new UnsupportedStorageKeyException(\get_class($targetKey));
-        }
-
         $key = $this->storageKeyGenerator->generateKey(RouteKeyInterface::class);
 
         if (!$key instanceof RouteStorageKey) {
             throw new UnsupportedStorageKeyException(\get_class($targetKey));
         }
 
-        $data = $this->fileStorageHandler->getJson($this->getStoragePath());
-        $data[$this->storageKeyGenerator->serialize($key)] = [
+        $this->repository->put($key, [
             'type' => $entityClassName,
-            'sourceKey' => $this->storageKeyGenerator->serialize($sourceKey),
-            'targetKey' => $this->storageKeyGenerator->serialize($targetKey),
-        ];
-        $this->fileStorageHandler->putJson($this->getStoragePath(), $data);
+            'sourceKey' => $sourceKey,
+            'targetKey' => $targetKey,
+        ]);
 
         return $key;
-    }
-
-    private function getStoragePath(): string
-    {
-        return 'routes.json';
     }
 }
