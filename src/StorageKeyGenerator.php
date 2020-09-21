@@ -4,6 +4,7 @@ namespace Heptacom\HeptaConnect\Storage\Native;
 
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\CronjobKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\CronjobRunKeyInterface;
+use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\MappingExceptionKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\MappingKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\MappingNodeKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\PortalNodeKeyInterface;
@@ -15,6 +16,7 @@ use Heptacom\HeptaConnect\Storage\Base\Exception\UnsupportedStorageKeyException;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\AbstractStorageKey;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\CronjobRunStorageKey;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\CronjobStorageKey;
+use Heptacom\HeptaConnect\Storage\Native\StorageKey\MappingExceptionStorageKey;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\MappingNodeStorageKey;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\MappingStorageKey;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\PortalNodeStorageKey;
@@ -33,6 +35,7 @@ class StorageKeyGenerator extends StorageKeyGeneratorContract
         RouteStorageKey::TYPE_KEY => RouteStorageKey::class,
         MappingStorageKey::TYPE_KEY => MappingStorageKey::class,
         MappingNodeStorageKey::TYPE_KEY => MappingNodeStorageKey::class,
+        MappingExceptionStorageKey::TYPE_KEY => MappingExceptionStorageKey::class,
     ];
 
     private const IMPLEMENTATION_MAP = [
@@ -43,6 +46,7 @@ class StorageKeyGenerator extends StorageKeyGeneratorContract
         RouteKeyInterface::class => RouteStorageKey::class,
         MappingKeyInterface::class => MappingStorageKey::class,
         MappingNodeKeyInterface::class => MappingNodeStorageKey::class,
+        MappingExceptionKeyInterface::class => MappingExceptionStorageKey::class,
     ];
 
     private FileStorageHandler $storage;
