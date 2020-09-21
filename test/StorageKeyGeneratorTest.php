@@ -5,6 +5,7 @@ namespace Heptacom\HeptaConnect\Storage\Native\Test;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\CronjobKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\CronjobRunKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\MappingKeyInterface;
+use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\MappingNodeKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\PortalNodeKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\RouteKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\WebhookKeyInterface;
@@ -17,6 +18,7 @@ use PHPUnit\Framework\TestCase;
  * @covers \Heptacom\HeptaConnect\Storage\Native\StorageKey\AbstractStorageKey
  * @covers \Heptacom\HeptaConnect\Storage\Native\StorageKey\CronjobStorageKey
  * @covers \Heptacom\HeptaConnect\Storage\Native\StorageKey\CronjobRunStorageKey
+ * @covers \Heptacom\HeptaConnect\Storage\Native\StorageKey\MappingNodeStorageKey
  * @covers \Heptacom\HeptaConnect\Storage\Native\StorageKey\MappingStorageKey
  * @covers \Heptacom\HeptaConnect\Storage\Native\StorageKey\PortalNodeStorageKey
  * @covers \Heptacom\HeptaConnect\Storage\Native\StorageKey\RouteStorageKey
@@ -106,5 +108,6 @@ class StorageKeyGeneratorTest extends TestCase
         yield [WebhookKeyInterface::class];
         yield [RouteKeyInterface::class];
         yield [MappingKeyInterface::class];
+        yield [MappingNodeKeyInterface::class];
     }
 }
