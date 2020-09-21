@@ -98,7 +98,7 @@ class CronjobRepository extends CronjobRepositoryContract
         string $cronExpression,
         \DateTimeInterface $queuedUntil
     ): CronjobInterface {
-        return new class ($portalNodeKey, $handler, $payload, $id, $cronExpression, $queuedUntil) implements CronjobInterface {
+        return new class($portalNodeKey, $handler, $payload, $id, $cronExpression, $queuedUntil) implements CronjobInterface {
             private PortalNodeKeyInterface $portalNodeKey;
 
             private string $handler;

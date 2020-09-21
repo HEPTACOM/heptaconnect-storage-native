@@ -40,12 +40,7 @@ class RouteRepository extends RouteRepositoryContract
             throw new UnsupportedStorageKeyException(\get_class($targetKey));
         }
 
-        return new class (
-            $key,
-            $targetKey,
-            $sourceKey,
-            (string) $item['type']
-        ) implements RouteInterface {
+        return new class($key, $targetKey, $sourceKey, (string) $item['type']) implements RouteInterface {
             private RouteKeyInterface $key;
 
             private PortalNodeKeyInterface $targetKey;

@@ -78,14 +78,7 @@ class CronjobRunRepository extends CronjobRunRepositoryContract
             throw new NotFoundException();
         }
 
-        return new class (
-            $portalNodeKey,
-            $cronjobKey,
-            $cronjobRunKey,
-            $item['handler'],
-            $item['payload'],
-            $item['queuedUntil']
-        ) implements CronjobRunInterface {
+        return new class($portalNodeKey, $cronjobKey, $cronjobRunKey, $item['handler'], $item['payload'], $item['queuedUntil']) implements CronjobRunInterface {
             private PortalNodeKeyInterface $portalNodeKey;
 
             private CronjobKeyInterface $cronjobKey;

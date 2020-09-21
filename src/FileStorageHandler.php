@@ -54,7 +54,7 @@ class FileStorageHandler
         if (\is_null($content) || empty($content)) {
             $this->remove($filePath);
         } else {
-            $this->put($filePath, \json_encode($content, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+            $this->put($filePath, \json_encode($content, \JSON_PRETTY_PRINT | \JSON_UNESCAPED_SLASHES));
         }
     }
 

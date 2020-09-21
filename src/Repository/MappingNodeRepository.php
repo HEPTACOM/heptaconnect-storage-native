@@ -34,8 +34,7 @@ class MappingNodeRepository extends MappingNodeRepositoryContract
     {
         $item = $this->repository->get($key);
 
-        return new class ($key, $item['type']) implements MappingNodeStructInterface
-        {
+        return new class($key, $item['type']) implements MappingNodeStructInterface {
             private MappingNodeKeyInterface $key;
 
             private string $datasetEntityClassName;

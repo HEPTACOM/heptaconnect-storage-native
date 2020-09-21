@@ -42,12 +42,7 @@ class MappingRepository extends MappingRepositoryContract
             throw new NotFoundException();
         }
 
-        return new class (
-            $item['externalId'],
-            $portalNodeKey,
-            $mappingNodeKey,
-            $item['mappingNodeType']
-        ) implements MappingInterface {
+        return new class($item['externalId'], $portalNodeKey, $mappingNodeKey, $item['mappingNodeType']) implements MappingInterface {
             private ?string $externalId;
 
             private PortalNodeKeyInterface $portalNodeKey;

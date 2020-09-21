@@ -56,13 +56,7 @@ class WebhookRepository extends WebhookRepositoryContract
             throw new UnsupportedStorageKeyException(\get_class($portalNodeKey));
         }
 
-        return new class (
-            $portalNodeKey,
-            $key,
-            (string) $item['key'],
-            (string) $item['handler'],
-            $item['payload'] ? (array) $item['payload'] : null
-        ) implements WebhookInterface {
+        return new class($portalNodeKey, $key, (string) $item['key'], (string) $item['handler'], $item['payload'] ? (array) $item['payload'] : null) implements WebhookInterface {
             private PortalNodeKeyInterface $portalNodeKey;
 
             private WebhookKeyInterface $key;
@@ -118,7 +112,7 @@ class WebhookRepository extends WebhookRepositoryContract
     {
         foreach ($this->repository->list() as $webhook) {
             if ($webhook['url'] === $url) {
-                yield new $webhook['id'];
+                yield new $webhook['id']();
             }
         }
     }

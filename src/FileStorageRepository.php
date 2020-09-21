@@ -145,7 +145,7 @@ class FileStorageRepository
 
         unset($value);
 
-        $data['_keys']  = $storageKeys;
+        $data['_keys'] = $storageKeys;
         $data['_datetimes'] = $datetimeKeys;
 
         return $data;

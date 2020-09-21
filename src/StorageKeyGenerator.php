@@ -61,15 +61,6 @@ class StorageKeyGenerator extends StorageKeyGeneratorContract
         return $this->createKey($keyClassName, null);
     }
 
-    private function nextPrimaryKey(string $type): int
-    {
-        $keys = $this->storage->getJson(self::FILE_KEYS);
-        $result = $keys[$type] = ($keys[$type] ?? 0) + 1;
-        $this->storage->putJson(self::FILE_KEYS, $keys);
-
-        return $result;
-    }
-
     public function serialize(StorageKeyInterface $key): string
     {
         if (!$key instanceof AbstractStorageKey) {
@@ -94,6 +85,15 @@ class StorageKeyGenerator extends StorageKeyGeneratorContract
         return $this->createKey(self::TYPE_KEY_MAP[$type], (int) $key);
     }
 
+    private function nextPrimaryKey(string $type): int
+    {
+        $keys = $this->storage->getJson(self::FILE_KEYS);
+        $result = $keys[$type] = ($keys[$type] ?? 0) + 1;
+        $this->storage->putJson(self::FILE_KEYS, $keys);
+
+        return $result;
+    }
+
     private function createKey(string $keyClassName, ?int $id = null): StorageKeyInterface
     {
         if (!\array_key_exists($keyClassName, self::IMPLEMENTATION_MAP)) {
@@ -110,6 +110,6 @@ class StorageKeyGenerator extends StorageKeyGeneratorContract
             $id = $this->nextPrimaryKey($type);
         }
 
-        return $class((string)$id);
+        return $class((string) $id);
     }
 }
