@@ -7,6 +7,7 @@ use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\MappingKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\MappingNodeKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\PortalNodeKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\StorageKeyInterface;
+use Heptacom\HeptaConnect\Storage\Base\Contract\Repository\MappingNodeRepositoryContract;
 use Heptacom\HeptaConnect\Storage\Base\Contract\Repository\MappingRepositoryContract;
 use Heptacom\HeptaConnect\Storage\Base\Contract\StorageKeyGeneratorContract;
 use Heptacom\HeptaConnect\Storage\Base\Exception\NotFoundException;
@@ -20,12 +21,16 @@ class MappingRepository extends MappingRepositoryContract
 
     private StorageKeyGeneratorContract $storageKeyGenerator;
 
+    private MappingNodeRepositoryContract $mappingNodeRepository;
+
     public function __construct(
         FileStorageRepository $repository,
-        StorageKeyGeneratorContract $storageKeyGenerator
+        StorageKeyGeneratorContract $storageKeyGenerator,
+        MappingNodeRepositoryContract $mappingNodeRepository
     ) {
         $this->repository = $repository;
         $this->storageKeyGenerator = $storageKeyGenerator;
+        $this->mappingNodeRepository = $mappingNodeRepository;
     }
 
     public function read(MappingKeyInterface $key): MappingInterface
@@ -113,6 +118,21 @@ class MappingRepository extends MappingRepositoryContract
         }
     }
 
+    public function listByPortalNodeAndType(PortalNodeKeyInterface $portalNodeKey, string $datasetEntityType): iterable
+    {
+        foreach ($this->repository->list() as $item) {
+            $itemPortalNodeKey = $item['portalNodeKey'] ?? null;
+
+            if (
+                $item['mappingNodeType'] === $datasetEntityType &&
+                $itemPortalNodeKey instanceof StorageKeyInterface &&
+                $itemPortalNodeKey->equals($portalNodeKey)
+            ) {
+                yield $item['id'];
+            }
+        }
+    }
+
     public function create(
         PortalNodeKeyInterface $portalNodeKey,
         MappingNodeKeyInterface $mappingNodeKey,
@@ -127,7 +147,7 @@ class MappingRepository extends MappingRepositoryContract
         $this->repository->put($id, [
             'portalNodeKey' => $portalNodeKey,
             'mappingNodeKey' => $mappingNodeKey,
-            'mappingNodeType' => null,
+            'mappingNodeType' => $this->mappingNodeRepository->read($mappingNodeKey)->getDatasetEntityClassName(),
             'externalId' => $externalId,
         ]);
 
