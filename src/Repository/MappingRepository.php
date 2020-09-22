@@ -118,6 +118,17 @@ class MappingRepository extends MappingRepositoryContract
         }
     }
 
+    public function listByMappingNode(MappingNodeKeyInterface $mappingNodeKey): iterable
+    {
+        foreach ($this->repository->list() as $item) {
+            $itemMappingNodeKey = $item['mappingNodeKey'] ?? null;
+
+            if ($itemMappingNodeKey instanceof StorageKeyInterface && $itemMappingNodeKey->equals($mappingNodeKey)) {
+                yield $item['id'];
+            }
+        }
+    }
+
     public function listByPortalNodeAndType(PortalNodeKeyInterface $portalNodeKey, string $datasetEntityType): iterable
     {
         foreach ($this->repository->list() as $item) {

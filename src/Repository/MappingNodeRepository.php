@@ -10,7 +10,7 @@ use Heptacom\HeptaConnect\Storage\Base\Contract\Repository\MappingRepositoryCont
 use Heptacom\HeptaConnect\Storage\Base\Contract\StorageKeyGeneratorContract;
 use Heptacom\HeptaConnect\Storage\Base\Exception\UnsupportedStorageKeyException;
 use Heptacom\HeptaConnect\Storage\Native\FileStorageRepository;
-use Heptacom\HeptaConnect\Storage\ShopwareDal\StorageKey\MappingNodeStorageKey;
+use Heptacom\HeptaConnect\Storage\Native\StorageKey\MappingNodeStorageKey;
 
 class MappingNodeRepository extends MappingNodeRepositoryContract
 {
@@ -89,5 +89,10 @@ class MappingNodeRepository extends MappingNodeRepositoryContract
         ]);
 
         return $key;
+    }
+
+    public function delete(MappingNodeKeyInterface $key): void
+    {
+        $this->repository->remove($key);
     }
 }
