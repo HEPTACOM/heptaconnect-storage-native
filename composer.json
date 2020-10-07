@@ -1,5 +1,6 @@
 {
     "name": "heptacom/heptaconnect-storage-native",
+    "version": "0.0.1",
     "type": "library",
     "description": "HEPTAconnect package to have dependencyless storage integration. Optimized on complete implementation instead of performance",
     "keywords": [
@@ -16,9 +17,9 @@
     ],
     "require": {
         "php": ">=7.4",
-        "heptacom/heptaconnect-dataset-base": "@dev",
-        "heptacom/heptaconnect-portal-base": "@dev",
-        "heptacom/heptaconnect-storage-base": "@dev"
+        "heptacom/heptaconnect-dataset-base": ">=0.0.1",
+        "heptacom/heptaconnect-portal-base": ">=0.0.1",
+        "heptacom/heptaconnect-storage-base": ">=0.0.1"
     },
     "conflict": {
         "nikic/php-parser": "4.7.0"
@@ -47,6 +48,5 @@
         "psr-4": {
             "Heptacom\\HeptaConnect\\Storage\\Native\\Test\\": "test/"
         }
-    },
-    "minimum-stability": "stable"
+    }
 }
