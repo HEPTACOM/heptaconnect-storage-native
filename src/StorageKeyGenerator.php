@@ -11,6 +11,7 @@ use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\PortalNodeKeyInterface
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\RouteKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\StorageKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\WebhookKeyInterface;
+use Heptacom\HeptaConnect\Storage\Base\Contract\JobKeyInterface;
 use Heptacom\HeptaConnect\Storage\Base\Contract\JobPayloadKeyInterface;
 use Heptacom\HeptaConnect\Storage\Base\Contract\StorageKeyGeneratorContract;
 use Heptacom\HeptaConnect\Storage\Base\Exception\UnsupportedStorageKeyException;
@@ -18,6 +19,7 @@ use Heptacom\HeptaConnect\Storage\Native\StorageKey\AbstractStorageKey;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\CronjobRunStorageKey;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\CronjobStorageKey;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\JobPayloadStorageKey;
+use Heptacom\HeptaConnect\Storage\Native\StorageKey\JobStorageKey;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\MappingExceptionStorageKey;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\MappingNodeStorageKey;
 use Heptacom\HeptaConnect\Storage\Native\StorageKey\MappingStorageKey;
@@ -29,6 +31,19 @@ class StorageKeyGenerator extends StorageKeyGeneratorContract
 {
     private const FILE_KEYS = 'storage_key_generator/keys.json';
 
+    private const IMPLEMENTATION_MAP = [
+        CronjobKeyInterface::class => CronjobStorageKey::class,
+        CronjobRunKeyInterface::class => CronjobRunStorageKey::class,
+        PortalNodeKeyInterface::class => PortalNodeStorageKey::class,
+        WebhookKeyInterface::class => WebhookStorageKey::class,
+        RouteKeyInterface::class => RouteStorageKey::class,
+        MappingKeyInterface::class => MappingStorageKey::class,
+        MappingNodeKeyInterface::class => MappingNodeStorageKey::class,
+        MappingExceptionKeyInterface::class => MappingExceptionStorageKey::class,
+        JobKeyInterface::class => JobStorageKey::class,
+        JobPayloadKeyInterface::class => JobPayloadStorageKey::class,
+    ];
+
     private const TYPE_KEY_MAP = [
         CronjobStorageKey::TYPE_KEY => CronjobStorageKey::class,
         CronjobRunStorageKey::TYPE_KEY => CronjobRunStorageKey::class,
@@ -39,18 +54,7 @@ class StorageKeyGenerator extends StorageKeyGeneratorContract
         MappingNodeStorageKey::TYPE_KEY => MappingNodeStorageKey::class,
         MappingExceptionStorageKey::TYPE_KEY => MappingExceptionStorageKey::class,
         JobPayloadStorageKey::TYPE_KEY => JobPayloadStorageKey::class,
-    ];
-
-    private const IMPLEMENTATION_MAP = [
-        CronjobKeyInterface::class => CronjobStorageKey::class,
-        CronjobRunKeyInterface::class => CronjobRunStorageKey::class,
-        PortalNodeKeyInterface::class => PortalNodeStorageKey::class,
-        WebhookKeyInterface::class => WebhookStorageKey::class,
-        RouteKeyInterface::class => RouteStorageKey::class,
-        MappingKeyInterface::class => MappingStorageKey::class,
-        MappingNodeKeyInterface::class => MappingNodeStorageKey::class,
-        MappingExceptionKeyInterface::class => MappingExceptionStorageKey::class,
-        JobPayloadKeyInterface::class => JobPayloadStorageKey::class,
+        JobStorageKey::TYPE_KEY => JobStorageKey::class,
     ];
 
     private FileStorageHandler $storage;
