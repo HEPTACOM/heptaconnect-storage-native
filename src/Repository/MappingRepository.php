@@ -2,11 +2,15 @@
 
 namespace Heptacom\HeptaConnect\Storage\Native\Repository;
 
+use Heptacom\HeptaConnect\Portal\Base\Mapping\Contract\MappingComponentStructContract;
 use Heptacom\HeptaConnect\Portal\Base\Mapping\Contract\MappingInterface;
+use Heptacom\HeptaConnect\Portal\Base\Mapping\MappingCollection;
+use Heptacom\HeptaConnect\Portal\Base\Mapping\MappingComponentCollection;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\MappingKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\MappingNodeKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\PortalNodeKeyInterface;
 use Heptacom\HeptaConnect\Portal\Base\StorageKey\Contract\StorageKeyInterface;
+use Heptacom\HeptaConnect\Portal\Base\StorageKey\MappingKeyCollection;
 use Heptacom\HeptaConnect\Storage\Base\Contract\Repository\MappingNodeRepositoryContract;
 use Heptacom\HeptaConnect\Storage\Base\Contract\Repository\MappingRepositoryContract;
 use Heptacom\HeptaConnect\Storage\Base\Contract\StorageKeyGeneratorContract;
@@ -76,7 +80,7 @@ class MappingRepository extends MappingRepositoryContract
                 return $this->externalId;
             }
 
-            public function setExternalId(string $externalId): MappingInterface
+            public function setExternalId(?string $externalId): MappingInterface
             {
                 $this->externalId = $externalId;
 
@@ -144,6 +148,38 @@ class MappingRepository extends MappingRepositoryContract
         }
     }
 
+    public function listUnsavedExternalIds(
+        PortalNodeKeyInterface $portalNodeKey,
+        string $datasetEntityClassName,
+        array $externalIdsToCheck
+    ): array {
+        $result = $externalIdsToCheck;
+
+        foreach ($this->repository->list() as $item) {
+            $itemPortalNodeKey = $item['portalNodeKey'] ?? null;
+            $externalId = $item['externalId'];
+
+            if (
+                !empty($externalId) &&
+                $item['mappingNodeType'] === $datasetEntityClassName &&
+                $itemPortalNodeKey instanceof StorageKeyInterface &&
+                $itemPortalNodeKey->equals($portalNodeKey)
+            ) {
+                $position = \array_search($externalId, $result, true);
+
+                if ($position !== false) {
+                    unset($result[$position]);
+                }
+
+                if (empty($result)) {
+                    break;
+                }
+            }
+        }
+
+        return $result;
+    }
+
     public function create(
         PortalNodeKeyInterface $portalNodeKey,
         MappingNodeKeyInterface $mappingNodeKey,
@@ -163,6 +199,33 @@ class MappingRepository extends MappingRepositoryContract
         ]);
 
         return $id;
+    }
+
+    /**
+     * @throws UnsupportedStorageKeyException
+     */
+    public function createList(MappingCollection $mappings): MappingKeyCollection
+    {
+        $result = new MappingKeyCollection();
+
+        /** @var MappingInterface $mapping */
+        foreach ($mappings as $mapping) {
+            $id = $this->storageKeyGenerator->generateKey(MappingKeyInterface::class);
+
+            if (!$id instanceof MappingStorageKey) {
+                throw new UnsupportedStorageKeyException(\get_class($id));
+            }
+
+            $this->repository->put($id, [
+                'portalNodeKey' => $mapping->getPortalNodeKey(),
+                'mappingNodeKey' => $mapping->getMappingNodeKey(),
+                'mappingNodeType' => $mapping->getDatasetEntityClassName(),
+                'externalId' => $mapping->getExternalId(),
+            ]);
+            $result->push([$id]);
+        }
+
+        return $result;
     }
 
     public function updateExternalId(MappingKeyInterface $key, ?string $externalId): void
