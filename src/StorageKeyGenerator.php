@@ -69,6 +69,14 @@ class StorageKeyGenerator extends StorageKeyGeneratorContract
         return $this->createKey($keyClassName, null);
     }
 
+    public function generateKeys(string $keyClassName, int $count): iterable
+    {
+        while ($count-- > 0) {
+            // TODO optimize IO operations
+            yield $this->createKey($keyClassName, null);
+        }
+    }
+
     public function serialize(StorageKeyInterface $key): string
     {
         if (!$key instanceof AbstractStorageKey) {
@@ -118,6 +126,6 @@ class StorageKeyGenerator extends StorageKeyGeneratorContract
             $id = $this->nextPrimaryKey($type);
         }
 
-        return $class((string) $id);
+        return new $class((string) $id);
     }
 }
